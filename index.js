@@ -71,31 +71,29 @@ class Snake {
   }
 
   checkCollisionBetweenItself(index) {
-    if (
-      index > 0 &&
-      this.snakeBodies[0].position.x + playerSizeAndSpeed >
-        this.snakeBodies[index].position.x &&
-      this.snakeBodies[0].position.x <
-        this.snakeBodies[index].position.x + playerSizeAndSpeed &&
-      this.snakeBodies[0].position.y <
-        this.snakeBodies[index].position.y + playerSizeAndSpeed &&
-      this.snakeBodies[0].position.y + playerSizeAndSpeed >
-        this.snakeBodies[index].position.y
-    ) {
-      initGame();
-    }
+  const headPosition = this.snakeBodies[0].position;
+  const bodyPosition = this.snakeBodies[index].position;
+  
+  const collisionX = headPosition.x + playerSizeAndSpeed > bodyPosition.x &&
+                     headPosition.x < bodyPosition.x + playerSizeAndSpeed;
+  const collisionY = headPosition.y < bodyPosition.y + playerSizeAndSpeed &&
+                     headPosition.y + playerSizeAndSpeed > bodyPosition.y;
+  
+  if (index > 0 && collisionX && collisionY) {
+    initGame();
   }
+}
 
-  checkCollisionToWall() {
-    if (
-      this.snakeBodies[0].position.x <= 0 ||
-      this.snakeBodies[0].position.x + playerSizeAndSpeed >= canvasWidth ||
-      this.snakeBodies[0].position.y <= 0 ||
-      this.snakeBodies[0].position.y + playerSizeAndSpeed >= canvasHeight
-    ) {
-      initGame();
-    }
+checkCollisionToWall() {
+  const headPosition = this.snakeBodies[0].position;
+  const xCollision = headPosition.x <= 0 || headPosition.x + playerSizeAndSpeed >= canvasWidth;
+  const yCollision = headPosition.y <= 0 || headPosition.y + playerSizeAndSpeed >= canvasHeight;
+
+  if (xCollision || yCollision) {
+    initGame();
   }
+}
+
 
   // most efficient and clean way until now inspired by Hangol's way
   updateGoingDirectionOfTails() {
@@ -264,27 +262,21 @@ function drawBackground() {
 }
 
 function configureSnakeDirectionByKey() {
-  if (
-    lastKeyPressed == "w" &&
-    snake.snakeBodies[0].goingDirection != Directions.Down
-  )
-    snake.setDirection(Directions.Up);
-  else if (
-    lastKeyPressed == "a" &&
-    snake.snakeBodies[0].goingDirection != Directions.Right
-  )
-    snake.setDirection(Directions.Left);
-  else if (
-    lastKeyPressed == "s" &&
-    snake.snakeBodies[0].goingDirection != Directions.Up
-  )
-    snake.setDirection(Directions.Down);
-  else if (
-    lastKeyPressed == "d" &&
-    snake.snakeBodies[0].goingDirection != Directions.Left
-  )
-    snake.setDirection(Directions.Right);
+  const directionMap = {
+    'w': Directions.Up,
+    'a': Directions.Left,
+    's': Directions.Down,
+    'd': Directions.Right
+  };
+
+  const currentDirection = snake.snakeBodies[0].goingDirection;
+  const newDirection = directionMap[lastKeyPressed];
+
+  if (newDirection && newDirection !== currentDirection) {
+    snake.setDirection(newDirection);
+  }
 }
+
 
 function getAllPlaceToSpawnFood() {
   let allLocationsMatrix = [];
@@ -328,24 +320,27 @@ function addFoodIfEmpty() {
 }
 
 function checkFoodCollision() {
+  const food = foods[0];
+  const snakeHead = snake.snakeBodies[0].position;
+  const foodPosition = food ? food.position : null;
+
   if (
-    foods[0] &&
-    snake.snakeBodies[0].position.x + playerSizeAndSpeed >
-      foods[0].position.x &&
-    snake.snakeBodies[0].position.x <
-      foods[0].position.x + playerSizeAndSpeed &&
-    snake.snakeBodies[0].position.y <
-      foods[0].position.y + playerSizeAndSpeed &&
-    snake.snakeBodies[0].position.y + playerSizeAndSpeed > foods[0].position.y
+    food &&
+    snakeHead.x + playerSizeAndSpeed > foodPosition.x &&
+    snakeHead.x < foodPosition.x + playerSizeAndSpeed &&
+    snakeHead.y < foodPosition.y + playerSizeAndSpeed &&
+    snakeHead.y + playerSizeAndSpeed > foodPosition.y
   ) {
     snake.canAddBody = true;
     foods.pop();
     score++;
+
     if (score > highScore) {
       highScore = score;
     }
   }
 }
+
 
 function animationLoop() {
   requestAnimationFrame(animationLoop);
