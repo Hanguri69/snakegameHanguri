@@ -38,8 +38,6 @@ class Food {
 
 class Snake {
   constructor() {
-    // const randomX = randomNumber(maxHorizontal) * playerSizeAndSpeed + edgePadding;
-    // const randomY = randomNumber(maxVertical) * playerSizeAndSpeed + edgePadding;
     this.snakeBodies = [
       {
         position: {
@@ -71,31 +69,34 @@ class Snake {
   }
 
   checkCollisionBetweenItself(index) {
-  const headPosition = this.snakeBodies[0].position;
-  const bodyPosition = this.snakeBodies[index].position;
-  
-  const collisionX = headPosition.x + playerSizeAndSpeed > bodyPosition.x &&
-                     headPosition.x < bodyPosition.x + playerSizeAndSpeed;
-  const collisionY = headPosition.y < bodyPosition.y + playerSizeAndSpeed &&
-                     headPosition.y + playerSizeAndSpeed > bodyPosition.y;
-  
-  if (index > 0 && collisionX && collisionY) {
-    initGame();
+    const headPosition = this.snakeBodies[0].position;
+    const bodyPosition = this.snakeBodies[index].position;
+
+    const collisionX =
+      headPosition.x + playerSizeAndSpeed > bodyPosition.x &&
+      headPosition.x < bodyPosition.x + playerSizeAndSpeed;
+    const collisionY =
+      headPosition.y < bodyPosition.y + playerSizeAndSpeed &&
+      headPosition.y + playerSizeAndSpeed > bodyPosition.y;
+
+    if (index > 0 && collisionX && collisionY) {
+      initGame();
+    }
   }
-}
 
-checkCollisionToWall() {
-  const headPosition = this.snakeBodies[0].position;
-  const xCollision = headPosition.x <= 0 || headPosition.x + playerSizeAndSpeed >= canvasWidth;
-  const yCollision = headPosition.y <= 0 || headPosition.y + playerSizeAndSpeed >= canvasHeight;
+  checkCollisionToWall() {
+    const headPosition = this.snakeBodies[0].position;
+    const xCollision =
+      headPosition.x <= 0 || headPosition.x + playerSizeAndSpeed >= canvasWidth;
+    const yCollision =
+      headPosition.y <= 0 ||
+      headPosition.y + playerSizeAndSpeed >= canvasHeight;
 
-  if (xCollision || yCollision) {
-    initGame();
+    if (xCollision || yCollision) {
+      initGame();
+    }
   }
-}
 
-
-  // most efficient and clean way until now inspired by Hangol's way
   updateGoingDirectionOfTails() {
     for (let index = this.snakeBodies.length - 1; index > 0; index -= 1) {
       this.snakeBodies[index].goingDirection =
@@ -263,10 +264,10 @@ function drawBackground() {
 
 function configureSnakeDirectionByKey() {
   const directionMap = {
-    'w': Directions.Up,
-    'a': Directions.Left,
-    's': Directions.Down,
-    'd': Directions.Right
+    w: Directions.Up,
+    a: Directions.Left,
+    s: Directions.Down,
+    d: Directions.Right,
   };
 
   const currentDirection = snake.snakeBodies[0].goingDirection;
@@ -276,7 +277,6 @@ function configureSnakeDirectionByKey() {
     snake.setDirection(newDirection);
   }
 }
-
 
 function getAllPlaceToSpawnFood() {
   let allLocationsMatrix = [];
@@ -304,8 +304,6 @@ function addFoodIfEmpty() {
       (place) => place.canSpawn
     );
 
-    console.log(allPossiblePlaceToPutFood.length);
-
     if (allPossiblePlaceToPutFood.length == 0) {
       console.log("You won");
       initGame();
@@ -319,28 +317,34 @@ function addFoodIfEmpty() {
   }
 }
 
+function isFoodCollision(snakeHead, foodPosition) {
+  return (
+    snakeHead.x + playerSizeAndSpeed > foodPosition.x &&
+    snakeHead.x < foodPosition.x + playerSizeAndSpeed &&
+    snakeHead.y < foodPosition.y + playerSizeAndSpeed &&
+    snakeHead.y + playerSizeAndSpeed > foodPosition.y
+  );
+}
+
+function handleFoodCollision() {
+  snake.canAddBody = true;
+  foods.pop();
+  score++;
+
+  if (score > highScore) {
+    highScore = score;
+  }
+}
+
 function checkFoodCollision() {
   const food = foods[0];
   const snakeHead = snake.snakeBodies[0].position;
   const foodPosition = food ? food.position : null;
 
-  if (
-    food &&
-    snakeHead.x + playerSizeAndSpeed > foodPosition.x &&
-    snakeHead.x < foodPosition.x + playerSizeAndSpeed &&
-    snakeHead.y < foodPosition.y + playerSizeAndSpeed &&
-    snakeHead.y + playerSizeAndSpeed > foodPosition.y
-  ) {
-    snake.canAddBody = true;
-    foods.pop();
-    score++;
-
-    if (score > highScore) {
-      highScore = score;
-    }
+  if (food && isFoodCollision(snakeHead, foodPosition)) {
+    handleFoodCollision();
   }
 }
-
 
 function animationLoop() {
   requestAnimationFrame(animationLoop);
